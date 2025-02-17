@@ -21,7 +21,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/api/notes/",
+					"raw": "http://localhost:8000/api/notes",
 					"protocol": "http",
 					"host": [
 						"localhost"
