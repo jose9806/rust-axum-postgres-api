@@ -8,7 +8,7 @@ CREATE TABLE
         title VARCHAR(255) NOT NULL UNIQUE,
         content TEXT NOT NULL,
         category VARCHAR(100),
-        published BOOLEAN DEFAULT FALSE,
+        published BOOLEAN DEFAULT FALSE NOT NULL,
         created_at TIMESTAMP
         WITH
             TIME ZONE DEFAULT NOW(),
