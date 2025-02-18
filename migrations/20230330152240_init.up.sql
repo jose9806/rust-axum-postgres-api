@@ -14,5 +14,15 @@ CREATE TABLE
             TIME ZONE DEFAULT NOW(),
             updated_at TIMESTAMP
         WITH
-            TIME ZONE DEFAULT NOW()
+            TIME ZONE DEFAULT NOW(),
+        tags TEXT[] DEFAULT '{}'
     );
+
+
+CREATE TABLE IF NOT EXISTS attachments (
+    id UUID PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
+    note_id UUID NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    original_filename TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
