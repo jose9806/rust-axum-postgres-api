@@ -6,11 +6,23 @@ use axum::{
 };
 use serde_json::json;
 use std::sync::Arc;
+use utoipa::path;
 
+use crate::domain::models::note::NoteModel;
 use crate::domain::schemas::note_schema::{CreateNoteSchema, FilterOptions, UpdateNoteSchema};
 use crate::infrastructure::database::AppState;
 use crate::services::note_service;
 
+/// Health checker endpoint.
+///
+/// **Path:** `/api/healthchecker`
+#[utoipa::path(
+    get,
+    path = "/api/healthchecker",
+    responses(
+        (status = 200, description = "Health check successful")
+    )
+)]
 pub async fn health_checker_handler() -> impl IntoResponse {
     Json(json!({
         "status": "success",
@@ -18,10 +30,32 @@ pub async fn health_checker_handler() -> impl IntoResponse {
     }))
 }
 
+/// List all notes with optional filtering.
+///
+/// **Path:** `/api/`
+///
+/// Query parameters:
+/// - `limit`: Limit number of results.
+/// - `page`: Page number.
+/// - `tags`: List of tags to filter by.
+#[utoipa::path(
+    get,
+    path = "/api/",
+    responses(
+        (status = 200, description = "List notes", body = Vec<NoteModel>),
+        (status = 500, description = "Internal server error")
+    ),
+    params(
+        ("limit" = Option<usize>, Query, description = "Limit number of notes"),
+        ("page" = Option<usize>, Query, description = "Page number"),
+        ("tags" = Option<Vec<String>>, Query, description = "Filter notes by tags")
+    )
+)]
 pub async fn list_notes_handler(
     State(app_state): State<Arc<AppState>>,
-    Query(filters): Query<FilterOptions>,
+    Query(mut filters): Query<FilterOptions>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
+    filters.tags = filters.tags.iter().map(|t| t.to_lowercase()).collect();
     match note_service::list_notes(&app_state.db, filters).await {
         Ok(notes) => {
             let response = json!({
@@ -41,6 +75,20 @@ pub async fn list_notes_handler(
     }
 }
 
+/// Create a new note.
+///
+/// **Path:** `/api/`
+///
+/// Request body: [CreateNoteSchema](crate::domain::schemas::note_schema::CreateNoteSchema)
+#[utoipa::path(
+    post,
+    path = "/api/",
+    request_body = CreateNoteSchema,
+    responses(
+        (status = 201, description = "Note created", body = NoteModel),
+        (status = 500, description = "Internal server error")
+    )
+)]
 pub async fn create_note_handler(
     State(app_state): State<Arc<AppState>>,
     Json(payload): Json<CreateNoteSchema>,
@@ -63,6 +111,20 @@ pub async fn create_note_handler(
     }
 }
 
+/// Retrieve a single note by ID.
+///
+/// **Path:** `/api/{id}`
+#[utoipa::path(
+    get,
+    path = "/api/{id}",
+    responses(
+        (status = 200, description = "Note found", body = NoteModel),
+        (status = 404, description = "Note not found")
+    ),
+    params(
+        ("id" = uuid::Uuid, Path, description = "ID of the note")
+    )
+)]
 pub async fn get_note_handler(
     Path(id): Path<uuid::Uuid>,
     State(app_state): State<Arc<AppState>>,
@@ -85,6 +147,23 @@ pub async fn get_note_handler(
     }
 }
 
+/// Update an existing note.
+///
+/// **Path:** `/api/{id}`
+///
+/// Request body: [UpdateNoteSchema](crate::domain::schemas::note_schema::UpdateNoteSchema)
+#[utoipa::path(
+    patch,
+    path = "/api/{id}",
+    request_body = UpdateNoteSchema,
+    responses(
+        (status = 200, description = "Note updated", body = NoteModel),
+        (status = 500, description = "Internal server error")
+    ),
+    params(
+        ("id" = uuid::Uuid, Path, description = "ID of the note")
+    )
+)]
 pub async fn edit_note_handler(
     Path(id): Path<uuid::Uuid>,
     State(app_state): State<Arc<AppState>>,
@@ -108,6 +187,20 @@ pub async fn edit_note_handler(
     }
 }
 
+/// Delete a note by ID.
+///
+/// **Path:** `/api/{id}`
+#[utoipa::path(
+    delete,
+    path = "/api/{id}",
+    responses(
+        (status = 204, description = "Note deleted"),
+        (status = 404, description = "Note not found")
+    ),
+    params(
+        ("id" = uuid::Uuid, Path, description = "ID of the note")
+    )
+)]
 pub async fn delete_note_handler(
     Path(id): Path<uuid::Uuid>,
     State(app_state): State<Arc<AppState>>,
