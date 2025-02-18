@@ -6,8 +6,13 @@ use dotenv::dotenv;
 use std::sync::Arc;
 use tower_http::cors::CorsLayer;
 
+use api::attachments::router::create_attachments_routes;
 use api::notes::router::create_notes_routes;
+use api::ApiDoc;
 use infrastructure::database::{init_db_pool, AppState};
+
+use utoipa::OpenApi;
+use utoipa_swagger_ui::{SwaggerUi, Url};
 
 mod api;
 mod domain;
@@ -28,8 +33,17 @@ async fn main() {
         .allow_credentials(true)
         .allow_headers([AUTHORIZATION, ACCEPT, CONTENT_TYPE]);
 
+    let openapi_spec = ApiDoc::openapi();
+
+    let docs_router = SwaggerUi::new("/docs").urls(vec![(
+        Url::new("API Docs", "/api-docs.json"),
+        openapi_spec.clone(),
+    )]);
+
     let app = axum::Router::new()
         .merge(create_notes_routes(app_state.clone()))
+        .merge(create_attachments_routes(app_state.clone()))
+        .merge(docs_router)
         .layer(cors);
 
     println!("🚀 Server running on http://0.0.0.0:8000");
