@@ -18,6 +18,7 @@ pub async fn list_notes(
             title,
             content,
             category,
+            COALESCE(tags, '{}')::text[] as "tags!: Vec<String>",
             published,
             created_at as "created_at!: chrono::DateTime<chrono::Utc>",
             updated_at as "updated_at!: chrono::DateTime<chrono::Utc>"
@@ -40,17 +41,19 @@ pub async fn create_note(
     content: String,
     category: Option<String>,
     published: Option<bool>,
+    tags: Vec<String>, // Now non-optional; default to empty array if needed
 ) -> Result<NoteModel, Error> {
     let note = sqlx::query_as!(
         NoteModel,
         r#"
-        INSERT INTO notes (title, content, category, published)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO notes (title, content, category, published, tags)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING
             id,
             title,
             content,
             category,
+            COALESCE(tags, '{}')::text[] as "tags!: Vec<String>",
             published,
             created_at as "created_at!: chrono::DateTime<chrono::Utc>",
             updated_at as "updated_at!: chrono::DateTime<chrono::Utc>"
@@ -58,7 +61,8 @@ pub async fn create_note(
         title,
         content,
         category,
-        published.unwrap_or(false)
+        published.unwrap_or(false),
+        &tags
     )
     .fetch_one(pool)
     .await?;
@@ -75,6 +79,7 @@ pub async fn get_note_by_id(pool: &Pool<Postgres>, id: Uuid) -> Result<NoteModel
             title,
             content,
             category,
+            COALESCE(tags, '{}')::text[] as "tags!: Vec<String>",
             published,
             created_at as "created_at!: chrono::DateTime<chrono::Utc>",
             updated_at as "updated_at!: chrono::DateTime<chrono::Utc>"
@@ -96,6 +101,7 @@ pub async fn update_note(
     content: Option<String>,
     category: Option<String>,
     published: Option<bool>,
+    tags: Option<Vec<String>>,
 ) -> Result<NoteModel, Error> {
     let note = sqlx::query_as!(
         NoteModel,
@@ -106,14 +112,16 @@ pub async fn update_note(
             content = COALESCE($2, content),
             category = COALESCE($3, category),
             published = COALESCE($4, published),
+            tags = COALESCE($5, tags),
             updated_at = NOW()
-        WHERE id = $5
+        WHERE id = $6
         RETURNING
             id,
             title,
             content,
             category,
             published,
+            COALESCE(tags, '{}')::text[] as "tags!: Vec<String>",
             created_at as "created_at!: chrono::DateTime<chrono::Utc>",
             updated_at as "updated_at!: chrono::DateTime<chrono::Utc>"
         "#,
@@ -121,6 +129,7 @@ pub async fn update_note(
         content,
         category,
         published,
+        tags.as_ref().map(|v| v.as_slice()),
         id
     )
     .fetch_one(pool)
