@@ -1,6 +1,6 @@
 dev:
 	docker-compose up -d
-	
+
 dev-down:
 	docker-compose down
 
@@ -14,7 +14,9 @@ start-server:
 	cargo watch -q -c -w src/ -x run
 
 install:
-	cargo add axum
+	cargo add axum@0.8 --features multipart
+	cargo add utoipa --features "chrono uuid"
+	cargo add utoipa-swagger-ui --features "axum"
 	cargo add tokio -F full
 	cargo add tower-http -F "cors"
 	cargo add serde_json
