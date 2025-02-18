@@ -5,14 +5,10 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 #[derive(Debug, FromRow, Deserialize, Serialize, ToSchema)]
-pub struct NoteModel {
+pub struct AttachmentModel {
     pub id: Uuid,
-    pub title: String,
-    pub content: String,
-    pub category: Option<String>,
-    #[serde(default)]
-    pub tags: Vec<String>,
-    pub published: bool,
+    pub note_id: Uuid,
+    pub file_path: String,
+    pub original_filename: Option<String>,
     pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
 }
