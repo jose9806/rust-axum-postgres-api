@@ -23,6 +23,7 @@ pub async fn create_note(
         payload.content,
         payload.category,
         payload.published,
+        payload.tags,
     )
     .await
 }
@@ -43,6 +44,7 @@ pub async fn update_note(
         payload.content,
         payload.category,
         payload.published,
+        payload.tags,
     )
     .await
 }
