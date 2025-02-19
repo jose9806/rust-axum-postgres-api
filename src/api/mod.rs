@@ -2,8 +2,6 @@ pub mod attachments;
 pub mod notes;
 use utoipa::OpenApi;
 
-// Make sure the paths here match the actual location of your handler functions.
-// Adjust the component schemas as needed to include your models and schemas.
 #[derive(OpenApi)]
 #[openapi(
     paths(
@@ -28,7 +26,7 @@ use utoipa::OpenApi;
         //         crate::domain::schemas::note_schema::FilterOptions)
     ),
     info(
-        title = "My Notes API",
+        title = "Plus Notes documentation",
         description = "An API for managing notes and attachments",
         version = "1.0.0"
     )
