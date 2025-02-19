@@ -14,10 +14,10 @@ use infrastructure::database::{init_db_pool, AppState};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::{SwaggerUi, Url};
 
-mod api;
-mod domain;
-mod infrastructure;
-mod services;
+pub mod api;
+pub mod domain;
+pub mod infrastructure;
+pub mod services;
 
 #[tokio::main]
 async fn main() {
