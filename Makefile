@@ -26,7 +26,12 @@ install:
 	cargo add validator --features derive
 	cargo add uuid -F "serde v4"
 	cargo add sqlx -F "runtime-async-std-native-tls postgres chrono uuid"
+	cargo add reqwest --features "json multipart"
 	# HotReload
 	cargo install cargo-watch
 	# SQLX-CLI
 	cargo install sqlx-cli
+
+
+test:
+	cargo test
