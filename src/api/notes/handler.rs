@@ -1,3 +1,4 @@
+#![allow(unused)]
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
@@ -176,6 +177,13 @@ pub async fn edit_note_handler(
                 "data": { "note": note }
             });
             Ok(Json(response))
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            let error_response = json!({
+                "status": "fail",
+                "message": format!("Note with ID: {} not found", id)
+            });
+            Err((StatusCode::NOT_FOUND, Json(error_response)))
         }
         Err(err) => {
             let error_response = json!({

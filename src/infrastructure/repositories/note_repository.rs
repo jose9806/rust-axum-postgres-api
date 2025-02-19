@@ -41,7 +41,7 @@ pub async fn create_note(
     content: String,
     category: Option<String>,
     published: Option<bool>,
-    tags: Vec<String>, // Now non-optional; default to empty array if needed
+    tags: Vec<String>,
 ) -> Result<NoteModel, Error> {
     let note = sqlx::query_as!(
         NoteModel,
@@ -103,7 +103,7 @@ pub async fn update_note(
     published: Option<bool>,
     tags: Option<Vec<String>>,
 ) -> Result<NoteModel, Error> {
-    let note = sqlx::query_as!(
+    let note_opt = sqlx::query_as!(
         NoteModel,
         r#"
         UPDATE notes
@@ -132,10 +132,14 @@ pub async fn update_note(
         tags.as_ref().map(|v| v.as_slice()),
         id
     )
-    .fetch_one(pool)
+    .fetch_optional(pool)
     .await?;
 
-    Ok(note)
+    if let Some(note) = note_opt {
+        Ok(note)
+    } else {
+        Err(sqlx::Error::RowNotFound)
+    }
 }
 
 pub async fn delete_note(pool: &Pool<Postgres>, id: Uuid) -> Result<(), Error> {

@@ -1,5 +1,3 @@
-// File: src/api/notes/router.rs
-
 use crate::api::notes::handler::{
     create_note_handler, delete_note_handler, edit_note_handler, get_note_handler,
     health_checker_handler, list_notes_handler,
