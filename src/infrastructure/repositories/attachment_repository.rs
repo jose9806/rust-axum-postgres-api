@@ -80,6 +80,8 @@ pub async fn get_attachment(
 }
 
 pub async fn delete_attachment(pool: &Pool<Postgres>, attachment_id: Uuid) -> Result<(), Error> {
+    let mut tx = pool.begin().await?;
+
     sqlx::query!(
         r#"
         DELETE FROM attachments
@@ -87,8 +89,9 @@ pub async fn delete_attachment(pool: &Pool<Postgres>, attachment_id: Uuid) -> Re
         "#,
         attachment_id
     )
-    .execute(pool)
+    .execute(&mut *tx)
     .await?;
 
+    tx.commit().await?;
     Ok(())
 }
